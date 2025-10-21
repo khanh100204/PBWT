@@ -1,0 +1,25 @@
+during this process, i feel like algo 2 was the hardest to understand.
+but when I understood the characteristics of the divergence array built on ak (sorted X), it is very logical now.
+How i understand algo:
+Algo1 : sort algorithm binary. very simple. 0 go first, 1 go later.
+Algo2 : very interesting and smart algo. 
+    when building ak, we can also build dk
+    dk is like, if you match until k-1 and now same bit, you can match at k
+    if not match, reset to k.
+    and this 
+    possible to implement bc:
+        lets say x1 matches x0 at k, impossible for dk-1 to represent a match not in these 2 sequences.
+        this is due to the fact that PBWT ensures x1 neightbor is the one that already current shares the longest sufffix.
+        its like, when a variable changes group, it lost all previous divergence 
+    => this divergence array is the core of algorithm. 
+
+Algo 3 : only find pair of sequences whose longest common substring ends exactly at position k
+    bc, again at k it pushes seqs into 0s and 1s array, if it reachs
+    dk[i] > k - L, a mismatch has appeared, and it flushed out all the matches that ended. (here is, every seq that got pushed with L >= k - dk[i])
+
+Algo 4: 4 instead finds all truly maximal shared regions between haplotypes, every pairwise block that:
+    matches exactly up to column k,
+    cannot be extended one more site forward (different at k + 1)
+    and also cannot be extended backward (different before start)
+    => parameter-free (no L) and reports each unique maximal match only once
+    If all neighbors in [m, n] differ at k, every pair (yi, yj) in that interval defines a match that starts at dk[i] (or dk[i+1]) ends at k.
