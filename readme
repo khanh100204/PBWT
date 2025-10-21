@@ -12,4 +12,4 @@ My implementation follows Durbins original paper very closely, replicating the l
 Algorithm 1: Building the prefix arrays (ak)
 Algorithm 2: Building both prefix and divergence arrays (dk)
 Algorithm 3: Reporting all haplotype matches longer than a threshold L
-Algorithm 4: Reporting all set-maximal matches in linear time
+Algorithm 4: Reporting all set-maximal matches
