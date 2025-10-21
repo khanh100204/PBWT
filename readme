@@ -1,0 +1,15 @@
+PBWT
+C++ implementation of Algorithms 1 to 4 from the paper
+Efficient haplotype matching and storage using the positional Burrows-Wheeler transform (PBWT)
+
+by Richard Durbin, Bioinformatics
+
+---
+
+I implemented the Positional Burrows-Wheeler Transform (PBWT), an efficient algorithm for haplotype matching, storage, and retrieval in genomic data.
+My implementation follows Durbins original paper very closely, replicating the logic for:
+
+Algorithm 1: Building the prefix arrays (ak)
+Algorithm 2: Building both prefix and divergence arrays (dk)
+Algorithm 3: Reporting all haplotype matches longer than a threshold L
+Algorithm 4: Reporting all set-maximal matches in linear time
