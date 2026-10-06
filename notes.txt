@@ -1,3 +1,5 @@
+$$ PBWT $$
+
 during this process, i feel like algo 2 was the hardest to understand.
 but when I understood the characteristics of the divergence array built on ak (sorted X), it is very logical now.
 How i understand algo:
@@ -5,17 +7,36 @@ Algo1 : sort algorithm binary. very simple. 0 go first, 1 go later.
 Algo2 : very interesting and smart algo. 
     when building ak, we can also build dk
     dk is like, if you match until k-1 and now same bit, you can match at k
-    if not match, reset to k.
-    and this 
-    possible to implement bc:
-        lets say x1 matches x0 at k, impossible for dk-1 to represent a match not in these 2 sequences.
-        this is due to the fact that PBWT ensures x1 neightbor is the one that already current shares the longest sufffix.
-        its like, when a variable changes group, it lost all previous divergence 
-    => this divergence array is the core of algorithm. 
+    the neighboring match is still a little blurry. we cant fully understand it.
+    but basically:
+        if different bit: match ends at k. (first 1, first 0) (different 0/1 group)
+        if same bit     : were neighbors: extend through k
+                          not  neighbors: compute d(2 rows)=max(between old d)
+    [] mean distance, or the latest match.
+    ***imagine: if array 012 is like this: 0 [0] 1 [1] 2  then 0 to 2 is obviously 1 and stays 1 if they kept matching (they do unless its the first 0 or first 1 encountered in the array). thats why use p and q.
+    its neighboring effect.***
+
+
+    how the implementation works:
+        d_k[i] = start position of the suffix match between adjacent PBWT rows.
+        Build d_{k+1} while scanning the current PBWT order.
+        p = max old d since the previous 0.
+        q = max old d since the previous 1.
+        If current bit = 0:
+        output p as the new d
+        reset p = 0
+        If current bit = 1:
+        output q as the new d
+        reset q = 0
+        First 0 and first 1 in each new group get k+1 as a sentinel.
+        Same bit + already neighbors: d stays the same, so the match extends.
+        Same bit + become new neighbors: new d = max(old d values between them).
+        Different bits: they separate into different groups, so their old adjacency ends.
 
 Algo 3 : only find pair of sequences whose longest common substring ends exactly at position k
     bc, again at k it pushes seqs into 0s and 1s array, if it reachs
     dk[i] > k - L, a mismatch has appeared, and it flushed out all the matches that ended. (here is, every seq that got pushed with L >= k - dk[i])
+    start found bc its max(all d between)
 
 Algo 4: 4 instead finds all truly maximal shared regions between haplotypes, every pairwise block that:
     matches exactly up to column k,
@@ -23,3 +44,9 @@ Algo 4: 4 instead finds all truly maximal shared regions between haplotypes, eve
     and also cannot be extended backward (different before start)
     => parameter-free (no L) and reports each unique maximal match only once
     If all neighbors in [m, n] differ at k, every pair (yi, yj) in that interval defines a match that starts at dk[i] (or dk[i+1]) ends at k.
+
+
+$$ DPBWT $$
+
+
+

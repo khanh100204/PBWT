@@ -1,4 +1,8 @@
 #include<bits/stdc++.h>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 using namespace std;    
 
 /*      x0: 0 1 0 0 1 0
@@ -8,6 +12,84 @@ using namespace std;
         x4: 1 1 0 1 0 0
         x5: 0 0 0 1 1 0
 */
+
+
+// read VCF (AI generated)
+vector<vector<int>> readVCF(const string& filename) {
+
+    ifstream file(filename);
+
+    if (!file.is_open()) {
+        cerr << "Cannot open VCF file: " << filename << endl;
+        exit(1);
+    }
+
+    vector<vector<int>> X;
+
+    string line;
+    int numSamples = 0;
+
+    while (getline(file, line)) {
+
+        if (line.rfind("##", 0) == 0)
+            continue;
+
+        if (line.rfind("#CHROM", 0) == 0) {
+
+            stringstream ss(line);
+            string field;
+            vector<string> fields;
+
+            while (ss >> field)
+                fields.push_back(field);
+
+            numSamples = fields.size() - 9;
+
+            X.resize(numSamples * 2);
+
+            continue;
+        }
+
+        if (line.empty())
+            continue;
+
+        stringstream ss(line);
+        string field;
+        for (int i = 0; i < 9; i++)
+            ss >> field;
+
+        for (int sample = 0; sample < numSamples; sample++) {
+
+            string genotype;
+            ss >> genotype;
+
+            // In a normal VCF this could be:
+            // 0|1
+            // or 0|1:35:99:...
+            // We only care about GT.
+            size_t colon = genotype.find(':');
+            if (colon != string::npos)
+                genotype = genotype.substr(0, colon);
+
+            size_t bar = genotype.find('|');
+
+            if (bar == string::npos) {
+                cerr << "Expected phased genotype, got: "
+                     << genotype << endl;
+                exit(1);
+            }
+
+            int allele1 = genotype[0] - '0';
+            int allele2 = genotype[bar + 1] - '0';
+
+            X[2 * sample].push_back(allele1);
+            X[2 * sample + 1].push_back(allele2);
+        }
+    }
+
+    return X;
+}
+
 
 int L; // minimum match length
 
@@ -84,8 +166,6 @@ void reportLongMatches(vector<vector<int>> x, vector<int> ak, vector<int> dk, in
                     start = max(start, dk[j]);
                 }
                 // report
-                // this line is for dPBWT testing
-                    // if (ai == ak.size()-1 || bi == ak.size()-1)
                 cout << min(ai,bi) << "  " << max(ai,bi) << "  " << start << "  " << k - 1<< "\n";
 
             }
@@ -199,8 +279,7 @@ void reportSetMaximalMatches(vector<vector<int>> X, vector<vector<int>> Ak, vect
                 for (int j = i + 1; j < right; j++) {
 
                     int neighbor = ak[j];
-                    
-                        
+
                     cout << mh << "  "  << neighbor << "  " << k + 1 << "  " << lengthRight << "\n";
                 }
             }
@@ -224,75 +303,33 @@ int main(){
     cout.tie(0);
 
     // freopen("bin_1k_1k.txt", "r", stdin);
-    // freopen("bin_1k_1k.out", "w", stdout);
+    freopen("algo4.out", "w", stdout);
 
-    // vector<string> rows;
-    // string line;
-    // while (cin >> line) {
-    //     rows.push_back(line);
-    // }
+    vector<vector<int>> X = readVCF("Algo4/s100i50.rnd.vcf");
 
-    
-    // int N = rows.size();          
-    // int M = rows[0].size();
-    // //cout << "N: " << N << ", M: " << M << "\n";
+    // /* easy test */
+    // vector<vector<int>> X = {
+    //         {0, 1, 0, 0, 1, 1},
+    //         {0, 1, 1, 0, 1, 1},
+    //         {1, 1, 0, 0, 1, 0},
+    //         {0, 0, 1, 1, 1, 0},
+    //         {1, 1, 0, 1, 0, 0},
+    //         {0, 0, 0, 1, 1, 0}  
+    //     };
 
-    // vector<vector<int>> X(M, vector<int>(N, 0));
-    // for (int i = 0; i < N; i++) {         
-    //     for (int j = 0; j < M; j++) {     
-    //         X[j][i] = rows[i][j] - '0';  
-    //     }
-    // }
-
-
-
-
-    /* easy test */
-    vector<vector<int>> Xold = {
-            {0, 1, 0, 0, 1, 1},
-            {0, 1, 1, 0, 1, 1},
-            {1, 1, 0, 0, 1, 0},
-            {0, 0, 1, 1, 1, 0},
-            {1, 1, 0, 1, 0, 0},
-            {0, 0, 0, 1, 1, 0}  
-        };
-          
-    vector<vector<int>> X = {
-            {0, 1, 0, 0, 1, 1},
-            {0, 1, 1, 0, 1, 1},
-            {1, 1, 0, 0, 1, 0},
-            {0, 0, 1, 1, 1, 0},
-            {1, 1, 0, 1, 0, 0},
-            {0, 0, 0, 1, 1, 0} ,
-            {0, 1, 0, 1, 1, 0} //z
-        };    
-    
 
     vector<vector<int>> Ak;
     vector<vector<int>> Dk;
     buildPBWT(X, Ak, Dk);
 
-    for (int i = 0; i < Ak.size(); i++) {
-        cout << "a" << i << ": ";
-        for (int a : Ak[i])
-            cout << a << " ";
-        cout << "\n";
-    }
 
-    cout<< "\n";
-    for (int i = 0; i < Dk.size(); i++) {
-        cout << "d" << i << ": ";
-        for (int d : Dk[i])
-            cout << d << " ";
-        cout << "\n";
-    }
     
-    L = 2; // minimum match length
-    for (int k = 0; k <= X[0].size(); k++) {
-        reportLongMatches(X, Ak[k], Dk[k], k, L);
-    }
+    L = 20; // minimum match length
+    // for (int k = 0; k <= X[0].size(); k++) {
+    //     reportLongMatches(X, Ak[k], Dk[k], k, L);
+    // }
 
-    // reportSetMaximalMatches(X, Ak, Dk);
+    reportSetMaximalMatches(X, Ak, Dk);
 
     return 0;
 }

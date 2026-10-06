@@ -1,0 +1,36 @@
+***insertion:
+    1. Start at t0 = bottom of column 0.
+
+    2. For each column k:
+        t[k+1] = t[k]->u   if z[k] = 0
+        t[k+1] = t[k]->v   if z[k] = 1
+
+    So t tells us where z belongs in the next column.
+
+    3. Insert one new node for z into each linked list.
+
+    4. Set z's own u/v pointers.
+
+    5. Fix nearby u/v pointers above z that should now point to z.
+
+    6. Backward sweep:
+        compute z's divergence with node above
+        update divergence of node below
+
+
+***long match query algo 3:
+    //Sweep 1:
+        follow u/v
+        compute t[k]
+        = where z WOULD be inserted in every column
+
+    //Sweep 2:
+        compute divergence of z
+        with its virtual above/below neighbors
+
+    //Sweep 3:
+        maintain [f, g)
+        = all sequences currently matching z for >= L
+
+        when a match ends:
+            print/report it

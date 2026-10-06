@@ -70,32 +70,19 @@ void buildPBWT(const vector<vector<int>>& x, vector<vector<int>>& Ak, vector<vec
 // Algo 3
 void reportLongMatches(vector<vector<int>> x, vector<int> ak, vector<int> dk, int k, int L ) {
     int m = x.size();
-    vector<pair<int,int>> a, b;
+    vector<int> a, b;
 
-    auto reportBlock = [&]() {
-        if (a.empty() || b.empty()) return;
-        for (auto [ai, posA] : a) {
-            for (auto [bi, posB] : b) {
-                int left = min(posA, posB);
-                int right = max(posA, posB);
-                int start = 0;
-
-                for (int j = left + 1; j <= right; j++) {
-                    start = max(start, dk[j]);
-                }
-                // report
-                // this line is for dPBWT testing
-                    // if (ai == ak.size()-1 || bi == ak.size()-1)
-                cout << min(ai,bi) << "  " << max(ai,bi) << "  " << start << "  " << k - 1<< "\n";
-
-            }
-        }
-    };
-
+   
 
     for (int i = 0; i < m; i++) {
         if (dk[i] > k - L) {
-            reportBlock();
+            if (!a.empty() && !b.empty()) {
+                for (int ai : a) {
+                    for (int bi : b) {
+                        cout << ai << "  " << bi << "  " << k - L << "  " << k - 1<< "\n";
+                    }
+                }
+            }
             a.clear();
             b.clear();
        
@@ -103,106 +90,73 @@ void reportLongMatches(vector<vector<int>> x, vector<int> ak, vector<int> dk, in
 
         int seq = ak[i];
         if (x[seq][k] == 0)
-            a.push_back({seq,i});
+            a.push_back(seq);
         else
-            b.push_back({seq,i});
+            b.push_back(seq);
     }
-    // last flush
-    reportBlock();
+
+    if (!a.empty() && !b.empty()) {
+        for (int ai : a) {
+            for (int bi : b) {
+                cout << ai << "  " << bi << "  " << k - L << "  " << k- 1 << "\n";
+            }
+        }
+    }
 }
 
 
 // Algo 4
 void reportSetMaximalMatches(vector<vector<int>> X, vector<vector<int>> Ak, vector<vector<int>> Dk ) {
-    int M = X.size();          
-    int N = X[0].size();       
+    int m = X.size(); 
+    int n = X[0].size();
 
-    for (int k = 0; k <= N; k++) {
+    for (int k = 0; k < n; k++) {
+        vector<int> ak = Ak[k];
+        vector<int> dk = Dk[k];
 
-        const vector<int>& ak = Ak[k];
-
-        vector<int> d = Dk[k];
-
+        vector<int> d(m + 2);
         d[0] = k + 1;
-        d.push_back(k + 1);
+        for (int i = 0; i < m; i++) d[i + 1] = dk[i];
+        d[m + 1] = k + 1;
 
-        bool forcedEnd = (k == N);
-
-        for (int i = 0; i < M; i++) {
-
-            int mh = ak[i];
-
-            int left = i - 1;
-            int right = i + 1;
-
+        for (int i = 1; i <= m; i++) {
+            int idx = ak[i - 1];
+            int m = i - 1;          
+            int n = i + 1;          
             bool skip = false;
 
             if (d[i] <= d[i + 1]) {
-
-                while (d[left + 1] <= d[i]) {
-
-                    int neighbor = ak[left];
-
-                    
-                    if (!forcedEnd && X[neighbor][k] == X[mh][k]) {
-                        skip = true;
+                while (m >= 1 && d[m + 1] >= d[i]) {    
+                    int left_idx = ak[m - 1];
+                    if (k < n - 1 && X[left_idx][k] == X[idx][k]) {
+                        skip = true;             
                         break;
                     }
-
-                    left--;
+                    m--;
                 }
             }
-
-            if (skip) {
-                continue;
-            }
+            if (skip) continue;
 
             if (d[i] >= d[i + 1]) {
-
-                while (d[right] <= d[i + 1]) {
-
-                    int neighbor = ak[right];
-
-                    if (!forcedEnd && X[neighbor][k] == X[mh][k]) {
-                        skip = true;
+                while (n <= m && d[n] >= d[i + 1]) {    
+                    int right_idx = ak[n - 1];
+                    if (k < n - 1 && X[right_idx][k] == X[idx][k]) {
+                        skip = true;                    
                         break;
                     }
-
-                    right++;
+                    n++;
                 }
             }
+            if (skip) continue;
 
-            if (skip) {
-                continue;
+            for (int j = m + 1; j < i; j++) {
+                if (k - d[i] + 1 >= L)
+                    cout << idx << "  " << ak[j - 1] << "  " << d[i]<< "  " << k << "\n";
             }
 
-            int startLeft = d[i];
-            int lengthLeft = k - startLeft;
-
-            if (lengthLeft > 0) {
-
-                for (int j = left + 1; j < i; j++) {
-
-                    int neighbor = ak[j];
-
-            
-                    cout << mh << "  " << neighbor << "  " << k + 1 << "  " << lengthLeft << "\n";
-                }
-            }
-
-           
-            int startRight = d[i + 1];
-            int lengthRight = k - startRight;
- 
-            if (lengthRight > 0) {
-
-                for (int j = i + 1; j < right; j++) {
-
-                    int neighbor = ak[j];
-                    
-                        
-                    cout << mh << "  "  << neighbor << "  " << k + 1 << "  " << lengthRight << "\n";
-                }
+            for (int j = i + 1; j < n; j++) {
+                if (k - d[i] + 1 >= L)
+                    cout << idx << "  " << ak[j - 1] << "  " << d[i]<< "  " << k << "\n";
             }
         }
     }
@@ -235,7 +189,7 @@ int main(){
     
     // int N = rows.size();          
     // int M = rows[0].size();
-    // //cout << "N: " << N << ", M: " << M << "\n";
+    // cout << "N: " << N << ", M: " << M << "\n";
 
     // vector<vector<int>> X(M, vector<int>(N, 0));
     // for (int i = 0; i < N; i++) {         
@@ -243,12 +197,7 @@ int main(){
     //         X[j][i] = rows[i][j] - '0';  
     //     }
     // }
-
-
-
-
-    /* easy test */
-    vector<vector<int>> Xold = {
+    vector<vector<int>> X = {
             {0, 1, 0, 0, 1, 1},
             {0, 1, 1, 0, 1, 1},
             {1, 1, 0, 0, 1, 0},
@@ -256,17 +205,6 @@ int main(){
             {1, 1, 0, 1, 0, 0},
             {0, 0, 0, 1, 1, 0}  
         };
-          
-    vector<vector<int>> X = {
-            {0, 1, 0, 0, 1, 1},
-            {0, 1, 1, 0, 1, 1},
-            {1, 1, 0, 0, 1, 0},
-            {0, 0, 1, 1, 1, 0},
-            {1, 1, 0, 1, 0, 0},
-            {0, 0, 0, 1, 1, 0} ,
-            {0, 1, 0, 1, 1, 0} //z
-        };    
-    
 
     vector<vector<int>> Ak;
     vector<vector<int>> Dk;
@@ -287,7 +225,7 @@ int main(){
         cout << "\n";
     }
     
-    L = 2; // minimum match length
+    // L = 0; // minimum match length
     for (int k = 0; k <= X[0].size(); k++) {
         reportLongMatches(X, Ak[k], Dk[k], k, L);
     }
