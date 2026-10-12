@@ -305,7 +305,7 @@ int main(){
     // freopen("bin_1k_1k.txt", "r", stdin);
     freopen("algo4.out", "w", stdout);
 
-    vector<vector<int>> X = readVCF("Algo4/s100i50.rnd.vcf");
+    vector<vector<int>> X = readVCF("Algo4/s50i25.rnd.vcf");
 
     // /* easy test */
     // vector<vector<int>> X = {

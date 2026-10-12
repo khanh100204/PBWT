@@ -225,7 +225,7 @@ int main(){
         cout << "\n";
     }
     
-    // L = 0; // minimum match length
+    L = 0     ; // minimum match length
     for (int k = 0; k <= X[0].size(); k++) {
         reportLongMatches(X, Ak[k], Dk[k], k, L);
     }
